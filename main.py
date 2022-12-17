@@ -1,0 +1,2 @@
+import litelang
+litelang.shell()
