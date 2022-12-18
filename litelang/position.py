@@ -13,7 +13,7 @@ class Position:
         self.filename = filename
         self.text = text
 
-    def advance(self, current_char) -> Self:
+    def advance(self, current_char=None) -> Self:
         self.index += 1
         self.column += 1
 

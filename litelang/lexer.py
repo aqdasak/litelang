@@ -10,7 +10,6 @@ from .error import IllegalCharError, Error
 class Lexer:
     def __init__(self, filename: str, text: str) -> None:
         self.text = text
-        self.pos = -1
         self.pos = Position(-1, 0, -1, filename, text)
         self.current_char = None
         self.advance()
@@ -34,33 +33,35 @@ class Lexer:
             elif self.current_char in DIGITS:
                 tokens.append(self.make_number())
             elif self.current_char == '+':
-                tokens.append(Token(TT.PLUS))
+                tokens.append(Token(TT.PLUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '-':
-                tokens.append(Token(TT.MINUS))
+                tokens.append(Token(TT.MINUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '*':
-                tokens.append(Token(TT.MUL))
+                tokens.append(Token(TT.MUL, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '/':
-                tokens.append(Token(TT.DIV))
+                tokens.append(Token(TT.DIV, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '(':
-                tokens.append(Token(TT.LEFT_PAREN))
+                tokens.append(Token(TT.LEFT_PAREN, pos_start=self.pos))
                 self.advance()
             elif self.current_char == ')':
-                tokens.append(Token(TT.RIGHT_PAREN))
+                tokens.append(Token(TT.RIGHT_PAREN, pos_start=self.pos))
                 self.advance()
             else:
                 pos_start = self.pos.copy()
                 self.advance()
                 return [], IllegalCharError(pos_start, self.pos, f"'{self.current_char}'")
 
+        tokens.append(Token(TT.EOF, pos_start=self.pos))
         return tokens, None
 
     def make_number(self) -> Token:
         num_str = ''
         dot_count = 0
+        pos_start = self.pos.copy()
 
         while self.current_char is not None and self.current_char in DIGITS+'.':
             if self.current_char == '.':
@@ -73,6 +74,6 @@ class Lexer:
 
         # self.unadvance()
         if dot_count == 0:
-            return Token(TT.INT, int(num_str))
+            return Token(TT.INT, int(num_str), pos_start, self.pos)
         else:
-            return Token(TT.FLOAT, float(num_str))
+            return Token(TT.FLOAT, float(num_str), pos_start, self.pos)

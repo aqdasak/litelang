@@ -11,7 +11,16 @@ def run(filename, text):
     lexer = Lexer(filename, text)
     tokens, error = lexer.make_tokens()
 
-    return tokens, error
+    # print('🚨', tokens)
+    # print('🚨', error)
+    if error:
+        return None, error
+
+    # Generate AST
+    parser = Parser(tokens)
+    ast = parser.parse()
+
+    return ast.node, ast.error
 
 
 def shell():
@@ -19,11 +28,12 @@ def shell():
     while True:
         try:
             text = input('Lite> ')
-            tokens, error = run(filename, text)
+            ast, error = run(filename, text)
             if error:
+                print(error.__class__.__name__)
                 print(error.as_string())
             else:
-                print(tokens)
+                print(ast)
 
         except KeyboardInterrupt:
             print('\nKeyboardInterrupt')
