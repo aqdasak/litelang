@@ -1,3 +1,4 @@
+from litelang.interpreter import Interpreter
 from .lexer import Lexer
 from .parser import Parser
 
@@ -20,7 +21,14 @@ def run(filename, text):
     parser = Parser(tokens)
     ast = parser.parse()
 
-    return ast.node, ast.error
+    if ast.error:
+        return None, ast.error
+
+    # Run program
+    interpreter = Interpreter()
+    result = interpreter.visit(ast.node)
+
+    return result.value, result.error
 
 
 def shell():

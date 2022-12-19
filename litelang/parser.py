@@ -1,6 +1,7 @@
-from typing import Self
+from typing import Any, Self
 
-from litelang.error import InvalidSyntaxError
+from litelang.error import Error, InvalidSyntaxError
+from litelang.position import Position
 from .token import TT, Token, BLANK
 
 ##################################
@@ -9,13 +10,16 @@ from .token import TT, Token, BLANK
 
 
 class Node:
-    pass
+    pos_start: Position
+    pos_end: Position
 
 
 class NumberNode(Node):
     # TODO: What is the requirement of this class?
     def __init__(self, token: Token) -> None:
         self.token = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
 
     def __repr__(self) -> str:
         return f'{self.token}'
@@ -27,6 +31,9 @@ class BinaryOperationNode(Node):
         self.op_token = op_token
         self.right_node = right_node
 
+        self.pos_start = left_node.pos_start
+        self.pos_end = right_node.pos_end
+
     def __repr__(self) -> str:
         return f'({self.left_node} {self.op_token} {self.right_node})'
 
@@ -35,6 +42,9 @@ class UnaryOperationNode(Node):
     def __init__(self, op_token: Token, node: Node) -> None:
         self.op_token = op_token
         self.node = node
+
+        self.pos_start = op_token.pos_start
+        self.pos_end = node.pos_end
 
     def __repr__(self) -> str:
         return f'({self.op_token} {self.node})'
@@ -47,10 +57,10 @@ class UnaryOperationNode(Node):
 
 class ParseResult:
     def __init__(self) -> None:
-        self.node = None
-        self.error = None
+        self.node: Node | None = None
+        self.error: Error | None = None
 
-    def propagate(self, result):
+    def propagate(self, result) -> Node | Any:
         if isinstance(result, ParseResult):
             # MAYBE TO PROPAGATE ERROR
             # if result.error:
@@ -61,11 +71,11 @@ class ParseResult:
             return result.node
         return result
 
-    def success(self, node) -> Self:
+    def success(self, node: Node) -> Self:
         self.node = node
         return self
 
-    def failure(self, error) -> Self:
+    def failure(self, error: Error) -> Self:
         self.error = error
         return self
 
